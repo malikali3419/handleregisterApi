@@ -82,6 +82,7 @@ class HandelsregisterScraper:
                                     company_name = company_tr[1].find_element(By.TAG_NAME, 'td').text
                                     company_name = company_tr[1].find_element(By.TAG_NAME, 'td').text
                                     search_record = SearchRecord.objects.filter(keyword=self.search_keyword).first()
+                                    print(search_record.keyword)
                                     if search_record:
                                         processed_company, created = ProcessedCompany.objects.get_or_create(search_record=search_record, name=company_name)
                                         if created:
@@ -103,7 +104,7 @@ class HandelsregisterScraper:
                                                             self.processed_ads.add(company_name)
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
-                                                            company = ProcessedCompany.objects.filter(name=company_name).first()
+                                                            company = ProcessedCompany.objects.filter(id=processed_company.id).first()
                                                             if company:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()
@@ -114,7 +115,7 @@ class HandelsregisterScraper:
                                                             self.processed_cds.add(company_name)
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
-                                                            company = ProcessedCompany.objects.filter(name=company_name).first()
+                                                            company = ProcessedCompany.objects.filter(id=processed_company.id).first()
                                                             if company:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()
@@ -124,7 +125,7 @@ class HandelsregisterScraper:
                                                                 continue
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
-                                                            company = ProcessedCompany.objects.filter(name=company_name).first()
+                                                            company = ProcessedCompany.objects.filter(id=processed_company.id).first()
                                                             if company:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()
@@ -135,7 +136,7 @@ class HandelsregisterScraper:
                                                             self.processed_sis.add(company_name)
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
-                                                            company = ProcessedCompany.objects.filter(name=company_name).first()
+                                                            company = ProcessedCompany.objects.filter(id=processed_company.id).first()
                                                             if company:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()

@@ -36,7 +36,7 @@ class ProcessResultsView(views.APIView):
         """
         search_record = SearchRecord.objects.filter(keyword=keyword).first()
         if not search_record:
-            scrape_and_download.delay(keyword)
+            scrape_and_download(keyword)
             return response.Response({"message": "Scraping and downloading initiated. Check status and results later."})
         else:
             return response.Response({"message": "The keyword is already scrapped."})
@@ -76,12 +76,12 @@ class GetResultsView(views.APIView):
                 )
                 if downloaded_files:
                     company_data = {
-                        "name": processed_company.name,
+                        "name": processed_company.name.split("-")[0],
                         "downloaded_files": DownloadedFileSerializer(downloaded_files, many=True).data
                     }
                 else:
                     company_data = {
-                        "name": processed_company.name,
+                        "name": processed_company.name.split("-")[0],
                     }
 
                 data.append(company_data)

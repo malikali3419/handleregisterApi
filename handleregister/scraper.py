@@ -2,8 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import os, time
-from selenium.webdriver.support.ui import Select
+import os
+import time
 from selenium.webdriver.common.action_chains import ActionChains
 from .models import SearchRecord, ProcessedCompany, DownloadedFile
 from core.settings import BASE_URL
@@ -24,10 +24,7 @@ class HandelsregisterScraper:
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-software-rasterizer")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--window-size=1920,1080")
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-infobars")
         chrome_options.add_argument("--disable-notifications")
@@ -57,18 +54,10 @@ class HandelsregisterScraper:
         search_record = SearchRecord.objects.create(keyword=self.search_keyword)
         search_record.save()
 
-    def process_results(self, num_results=100):
-        dropdown_css_selector = "select[name='ergebnissForm:selectedSuchErgebnisFormTable_rppDD']"
-        dropdown = WebDriverWait(self.driver, 20).until(EC.element_to_be_clickable((By.CSS_SELECTOR, dropdown_css_selector)))
-
-        select = Select(dropdown)
-        select.select_by_value(str(num_results))
-        time.sleep(20)
+    def process_results(self):
         for i in range(5):
             try:
-                table = WebDriverWait(self.driver, 10).until(
-                        EC.presence_of_element_located((By.ID, 'ergebnissForm:selectedSuchErgebnisFormTable_data'))
-                    )
+                table = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, 'ergebnissForm:selectedSuchErgebnisFormTable_data')))
                 company_rows = table.find_elements(By.TAG_NAME, 'tr')
                 for company_row in company_rows:
                     try:
@@ -79,7 +68,6 @@ class HandelsregisterScraper:
                             if len(company_tab) >= 1:
                                 company_tr = company_tab[0].find_elements(By.TAG_NAME, 'tr')
                                 if len(company_tr) >= 2:
-                                    company_name = company_tr[1].find_element(By.TAG_NAME, 'td').text
                                     company_name = company_tr[1].find_element(By.TAG_NAME, 'td').text
                                     search_record = SearchRecord.objects.filter(keyword=self.search_keyword).first()
                                     print(search_record.keyword)
@@ -141,7 +129,8 @@ class HandelsregisterScraper:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()
                                                     except Exception as e:
-                                                        self.driver.back()
+                                                        print("Error processing document:", e)
+                                                        self.driver.get("https://www.handelsregister.de/rp_web/ergebnisse.xhtml")
                                                         continue
                                             else:
                                                 print("No 'a' elements found within the div")
@@ -157,7 +146,7 @@ class HandelsregisterScraper:
                             print("Not enough td elements within the row")
 
                     except Exception as e:
-                        print("ERROR", e)
+                        print("Error processing company:", e)
                         break
                 
             except Exception as e:
@@ -178,4 +167,3 @@ class HandelsregisterScraper:
 
     def quit_driver(self):
         self.driver.quit()
-

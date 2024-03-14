@@ -7,6 +7,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import views, response
 from .tasks import scrape_and_download
+from django.db.models import Q
 
 
 
@@ -70,11 +71,19 @@ class GetResultsView(views.APIView):
         if processed_companies.exists():
             data = []
             for processed_company in processed_companies:
-                downloaded_files = DownloadedFile.objects.filter(company=processed_company)
-                company_data = {
-                    "name": processed_company.name,
-                    "downloaded_files": DownloadedFileSerializer(downloaded_files, many=True).data
-                }
+                downloaded_files = DownloadedFile.objects.filter(
+                    Q(company=processed_company) & ~Q(file_path__endswith='xhtml')
+                )
+                if downloaded_files:
+                    company_data = {
+                        "name": processed_company.name,
+                        "downloaded_files": DownloadedFileSerializer(downloaded_files, many=True).data
+                    }
+                else:
+                    company_data = {
+                        "name": processed_company.name,
+                    }
+
                 data.append(company_data)
 
             return response.Response(data)

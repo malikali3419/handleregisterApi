@@ -52,7 +52,7 @@ class HandelsregisterScraper:
         button_id = 'form:schlagwortOptionen:2'
         button_element = self.driver.find_element(By.ID, button_id)
         self.driver.execute_script("arguments[0].click();", button_element)
-        
+
         button_id = 'form:btnSuche'
         button_element = self.driver.find_element(By.ID, button_id)
         self.driver.execute_script("arguments[0].click();", button_element)
@@ -80,9 +80,8 @@ class HandelsregisterScraper:
                                 if len(company_tr) >= 2:
                                     company_name = company_tr[1].find_element(By.TAG_NAME, 'td').text
                                     search_record = SearchRecord.objects.filter(keyword=self.search_keyword).first()
-                                    print(search_record.keyword)
                                     if search_record:
-                                        processed_company, created = ProcessedCompany.objects.get_or_create(search_record=search_record, name=company_name)
+                                        processed_company, created = ProcessedCompany.objects.get_or_create(search_record=search_record, name=company_name + "-" + company_tr[0].text)
                                         if created:
                                             print(f"Processed company {company_name} created.")
                                         else:
@@ -96,10 +95,11 @@ class HandelsregisterScraper:
                                                 for document in documents:
                                                     try:     
                                                         if document.text == "AD":
-                                                            if company_name in self.processed_ads:
+                                                            if (company_name + company_td[0].text) in self.processed_ads:
                                                                 print(f"Skipping previously processed company: {company_name}")
                                                                 continue
-                                                            self.processed_ads.add(company_name)
+                                                            self.processed_ads.add(company_name + company_td[0].text)
+                                                            print(company_ad[0].text)
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
                                                             company = ProcessedCompany.objects.filter(id=processed_company.id).first()
@@ -107,10 +107,10 @@ class HandelsregisterScraper:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()
                                                         elif document.text == "CD":
-                                                            if company_name in self.processed_cds:
+                                                            if (company_name + company_td[0].text) in self.processed_cds:
                                                                 print(f"Skipping previously processed company: {company_name}")
                                                                 continue
-                                                            self.processed_cds.add(company_name)
+                                                            self.processed_cds.add(company_name + company_td[0].text)
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
                                                             company = ProcessedCompany.objects.filter(id=processed_company.id).first()
@@ -118,9 +118,10 @@ class HandelsregisterScraper:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()
                                                         elif document.text == "HD":
-                                                            if company_name in self.processed_hds:
+                                                            if (company_name + company_td[0].text) in self.processed_hds:
                                                                 print(f"Skipping previously processed company: {company_name}")
                                                                 continue
+                                                            self.processed_hds.add(company_name + company_td[0].text)
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
                                                             company = ProcessedCompany.objects.filter(id=processed_company.id).first()
@@ -128,10 +129,10 @@ class HandelsregisterScraper:
                                                                 downloaded_file = DownloadedFile.objects.create(company=company, file_path=download_link)
                                                                 downloaded_file.save()
                                                         elif document.text == "SI":
-                                                            if company_name in self.processed_sis:
+                                                            if (company_name + company_td[0].text) in self.processed_sis:
                                                                 print(f"Skipping previously processed company: {company_name}")
                                                                 continue
-                                                            self.processed_sis.add(company_name)
+                                                            self.processed_sis.add(company_name + company_td[0].text)
                                                             file_path = self.click_and_download(document)
                                                             download_link = BASE_URL + "download/"  + file_path
                                                             company = ProcessedCompany.objects.filter(id=processed_company.id).first()

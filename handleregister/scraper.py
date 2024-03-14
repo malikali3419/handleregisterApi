@@ -48,9 +48,16 @@ class HandelsregisterScraper:
         text_area_element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, text_area_id)))
         text_area_element.send_keys(self.search_keyword)
 
+
+        button_id = 'form:schlagwortOptionen:2'
+        button_element = self.driver.find_element(By.ID, button_id)
+        self.driver.execute_script("arguments[0].click();", button_element)
+        
         button_id = 'form:btnSuche'
         button_element = self.driver.find_element(By.ID, button_id)
         self.driver.execute_script("arguments[0].click();", button_element)
+
+
 
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.url_changes("https://www.handelsregister.de/rp_web/ergebnisse.xhtml"))
